@@ -1,17 +1,17 @@
 import 'dart:convert';
 
 import 'package:auth_and_clean_arch/core/error/exceptions.dart';
+import 'package:auth_and_clean_arch/features/auth/data/models/user_model.dart';
 import 'package:http/http.dart' as http;
 
 abstract interface class AuthRemoteDataSource {
-  Future<String> signUp({
+  Future<UserModel> signUp({
     required String name,
     required String email,
     required String password,
   });
 
-  Future<String> login({
-    required String name,
+  Future<UserModel> login({
     required String email,
     required String password,
   });
@@ -19,21 +19,39 @@ abstract interface class AuthRemoteDataSource {
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
-  Future<String> login(
-      {required String name, required String email, required String password}) {
-    // TODO: implement login
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<String> signUp(
-      {required String name,
-      required String email,
-      required String password}) async {
+  Future<UserModel> login({
+    required String email,
+    required String password
+  }) async {
     try {
       final response = await http.get(Uri.parse("uri"));
       final responseData = json.decode(response.body);
-      return responseData;
+
+      if(responseData.user == null) {
+        throw const ServerException("User is null");
+      }
+
+      return UserModel.fromJson(responseData.user);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> signUp({
+      required String name,
+      required String email,
+      required String password
+    }) async {
+    try {
+      final response = await http.get(Uri.parse("uri"));
+      final responseData = json.decode(response.body);
+      
+      if(responseData.user == null) {
+        throw const ServerException("User is null");
+      }
+
+      return UserModel.fromJson(responseData.user);
     } catch (e) {
       throw ServerException(e.toString());
     }
